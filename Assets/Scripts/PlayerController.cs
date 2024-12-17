@@ -4,140 +4,104 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    // Variables públicas
-    public float walkSpeed = 2.0f; // Velocidad al caminar
-    public float runSpeed = 5.0f;  // Velocidad al correr
-    public float rotationSpeed = 10f; // Velocidad de rotación
-    public float jumpForce = 8f; // Fuerza del salto
-    public float gravity = -9.81f; // Fuerza de la gravedad
+    public float moveSpeed = 2f;
+    public float sprintSpeed = 5f;
+    public float rotationSpeed = 10f;
+    public float jumpForce = 5f; // Ajustado para trabajar mejor con la gravedad.
+    public Transform cameraPivot;
+    public Transform groundCheckCenter;
+    public Vector3 groundCheckSize = Vector3.one;
+    public LayerMask groundLayer;
 
-    // Variables privadas
-    private float currentSpeed; // Velocidad actual (caminar o correr)
-    private Vector3 velocity; // Velocidad en el espacio 3D
-    private bool isGrounded; // Verifica si está en el suelo
-    private CharacterController characterController; // Referencia al CharacterController
+    private float camXRot = 0f;
+    private Vector3 inputDirection;
+    private Rigidbody rb;
+    private Camera cam;
+    private bool isGrounded = true;
 
-    // Animación (opcional, si usas Animator)
-    private Animator animator; // Referencia al Animator
-
-    // Variables para la cámara
-    public Transform cameraTransform; // Transform de la cámara
-    public float cameraDistance = 5.0f; // Distancia de la cámara desde el personaje
-    public float cameraHeight = 2.0f; // Altura de la cámara respecto al personaje
-    public float cameraRotationSpeed = 5.0f; // Velocidad de rotación de la cámara
-    public float cameraCollisionOffset = 0.3f; // Para evitar que la cámara pase a través de objetos
-
-    // Start se llama antes del primer frame
     void Start()
     {
-        // Obtener el CharacterController y Animator
-        characterController = GetComponent<CharacterController>();
-        animator = GetComponent<Animator>(); // Asegúrate de que tu personaje tiene un Animator
+        rb = GetComponent<Rigidbody>();
+        rb.freezeRotation = true; // Evitar que el Rigidbody rote por colisiones.
+        cam = Camera.main;
     }
 
-    // Update se llama una vez por frame
     void Update()
     {
-        // Movimiento y gravedad
-        isGrounded = characterController.isGrounded; // Verifica si estamos tocando el suelo
+        HandleMovementInput();
+        HandleCameraRotation();
+        GroundCheck();
 
-        if (isGrounded && velocity.y < 0)
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            velocity.y = -2f; // Hace que el personaje se quede pegado al suelo
+            Jump();
         }
-
-        // Mover al jugador
-        MovePlayer();
-
-        // Aplicar la gravedad
-        velocity.y += gravity * Time.deltaTime;
-
-        // Mover al personaje en el espacio 3D
-        characterController.Move(velocity * Time.deltaTime);
-
-        // Controlar la cámara
-        HandleCamera();
     }
 
-    // Función para mover al jugador
-    private void MovePlayer()
+    void FixedUpdate()
+    {
+        MoveCharacter();
+    }
+
+    void HandleMovementInput()
     {
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
-        Vector3 direction = new Vector3(horizontal, 0, vertical).normalized;
+        Vector3 forward = cam.transform.forward;
+        Vector3 right = cam.transform.right;
 
-        if (direction.magnitude >= 0.1f) // Si hay movimiento
-        {
-            // Determinar la velocidad actual según si el jugador corre o camina
-            if (Input.GetKey(KeyCode.LeftShift)) // Si mantiene Shift, corre
-                currentSpeed = runSpeed;
-            else
-                currentSpeed = walkSpeed;
+        forward.y = 0f;
+        right.y = 0f;
 
-            // Calcular la dirección de movimiento (como en tercera persona)
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref velocity.y, rotationSpeed);
-            transform.rotation = Quaternion.Euler(0, angle, 0);
+        forward.Normalize();
+        right.Normalize();
 
-            // Mover el personaje en la dirección de la cámara
-            Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward;
-            velocity = moveDirection * currentSpeed;
-
-            // Animaciones (si estás usando un Animator)
-            if (animator != null)
-            {
-                animator.SetFloat("Speed", direction.magnitude); // Cambiar la velocidad de animación
-                animator.SetBool("IsRunning", Input.GetKey(KeyCode.LeftShift)); // Animación de correr
-            }
-        }
-        else
-        {
-            // Si no hay movimiento, rotar hacia la cámara
-            Vector3 directionToCamera = cameraTransform.position - transform.position;
-            directionToCamera.y = 0; // Mantener la dirección en el plano horizontal
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(directionToCamera), Time.deltaTime * rotationSpeed);
-
-            // Detener las animaciones si no hay movimiento
-            if (animator != null)
-            {
-                animator.SetFloat("Speed", 0);
-            }
-        }
-
-        // Salto (si el personaje está en el suelo y presiona la tecla de salto)
-        if (isGrounded && Input.GetButtonDown("Jump"))
-        {
-            velocity.y = jumpForce; // Aplicar fuerza de salto
-        }
+        inputDirection = (forward * vertical + right * horizontal).normalized;
     }
 
-    // Función para manejar la cámara en tercera persona
-    private void HandleCamera()
+    void HandleCameraRotation()
     {
-        // Obtener los movimientos del mouse o del joystick (para rotar la cámara)
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
 
-        // Rotar la cámara alrededor del personaje (en el eje Y)
-        cameraTransform.Rotate(0, mouseX * cameraRotationSpeed, 0);
+        transform.Rotate(0, mouseX * rotationSpeed * Time.deltaTime, 0);
 
-        // Limitar la inclinación vertical de la cámara (para evitar que mire demasiado arriba o abajo)
-        Vector3 currentRotation = cameraTransform.rotation.eulerAngles;
-        currentRotation.x -= mouseY * cameraRotationSpeed;
-        currentRotation.x = Mathf.Clamp(currentRotation.x, 10f, 80f); // Limitar la inclinación
-        cameraTransform.rotation = Quaternion.Euler(currentRotation);
+        camXRot -= mouseY * rotationSpeed * Time.deltaTime;
+        camXRot = Mathf.Clamp(camXRot, -45f, 45f);
 
-        // Colocar la cámara detrás del personaje
-        Vector3 desiredPosition = transform.position - cameraTransform.forward * cameraDistance + Vector3.up * cameraHeight;
+        cameraPivot.localEulerAngles = new Vector3(camXRot, 0, 0);
+    }
 
-        // Verificar colisiones entre la cámara y el entorno
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, -cameraTransform.forward, out hit, cameraDistance))
+    void MoveCharacter()
+    {
+        float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? sprintSpeed : moveSpeed;
+
+        if (inputDirection.magnitude >= 0.1f)
         {
-            desiredPosition = hit.point + hit.normal * cameraCollisionOffset; // Desplazar la cámara para evitar colisiones
+            Quaternion targetRotation = Quaternion.LookRotation(inputDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
         }
 
-        cameraTransform.position = desiredPosition;
+        Vector3 velocity = new Vector3(inputDirection.x * currentSpeed, rb.velocity.y, inputDirection.z * currentSpeed);
+        rb.velocity = velocity;
+    }
+
+    void Jump()
+    {
+        rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
+    }
+
+    void GroundCheck()
+    {
+        Collider[] colliders = Physics.OverlapBox(groundCheckCenter.position, groundCheckSize * 0.5f, Quaternion.identity, groundLayer);
+        isGrounded = colliders.Length > 0;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireCube(groundCheckCenter.position, groundCheckSize);
     }
 }
+
