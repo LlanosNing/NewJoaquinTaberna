@@ -5,62 +5,77 @@ using UnityEngine.AI;
 
 public class NPCMovement : MonoBehaviour
 {
-    public NavMeshAgent agent; // El agente de navegación que se moverá hacia el destino
-    public LayerMask dropPointLayer; // Capa de los puntos de entrega (drop points)
-    public float searchRadius = 50f; // Radio para buscar puntos de entrega
-    public string targetObjectName = "Silla"; // El nombre del objeto hijo que queremos que el NPC encuentre
-
-    private Transform targetDropPointChild; // El objeto hijo del punto de entrega al que se moverá el NPC
+    public NavMeshAgent agent; // NavMeshAgent for movement
+    private Chair targetChair; // Chair the NPC will sit on
+    private bool isSeated = false; // Whether the NPC is seated
 
     void Start()
     {
-        // Si el NavMeshAgent no está asignado, lo asignamos desde el componente del NPC
         if (agent == null)
-        {
             agent = GetComponent<NavMeshAgent>();
-        }
 
-        // Buscar un punto de entrega aleatorio
-        FindRandomDropPoint();
+        // Look for a random available chair
+        FindChair();
     }
 
     void Update()
     {
-        // Si el agente ha llegado a su destino, buscar otro punto de entrega aleatorio
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        // If already seated, do nothing
+        if (isSeated) return;
+
+        // If the NPC has reached the chair, "sit on it"
+        if (targetChair != null && !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
-            FindRandomDropPoint();
+            SitOnChair();
         }
     }
 
-    // Método para buscar un punto de entrega aleatorio en la escena
-    void FindRandomDropPoint()
+    void FindChair()
     {
-        // Buscar todos los puntos de entrega dentro del radio
-        Collider[] dropPoints = Physics.OverlapSphere(transform.position, searchRadius, dropPointLayer);
+        // Find all tables in the scene
+        Table[] tables = FindObjectsOfType<Table>();
+        Chair[] availableChairs = GetAvailableChairs(tables);
 
-        if (dropPoints.Length > 0)
+        if (availableChairs.Length > 0)
         {
-            // Seleccionar un punto de entrega aleatorio de la lista
-            Collider randomDropPoint = dropPoints[Random.Range(0, dropPoints.Length)];
-
-            // Buscar el objeto hijo con el nombre específico (por ejemplo, "Silla")
-            Transform randomDropPointChild = randomDropPoint.transform.Find(targetObjectName);
-
-            if (randomDropPointChild != null)
-            {
-                targetDropPointChild = randomDropPointChild;
-                agent.SetDestination(targetDropPointChild.position);
-                Debug.Log("NPC se dirige a: " + targetDropPointChild.name);
-            }
-            else
-            {
-                Debug.LogWarning("El punto de entrega no tiene un hijo con el nombre: " + targetObjectName);
-            }
+            // Select a random chair from the available ones
+            targetChair = availableChairs[Random.Range(0, availableChairs.Length)];
+            targetChair.Occupy(); // Mark the chair as occupied
+            agent.SetDestination(targetChair.transform.position);
         }
         else
         {
-            Debug.LogWarning("No se encontraron puntos de entrega cerca.");
+            Debug.LogWarning("No available chairs for the NPC.");
         }
+    }
+
+    Chair[] GetAvailableChairs(Table[] tables)
+    {
+        var availableChairsList = new System.Collections.Generic.List<Chair>();
+
+        foreach (Table table in tables)
+        {
+            foreach (Chair chair in table.chairs)
+            {
+                if (!chair.isOccupied)
+                {
+                    availableChairsList.Add(chair);
+                }
+            }
+        }
+
+        return availableChairsList.ToArray();
+    }
+
+    void SitOnChair()
+    {
+        isSeated = true;
+        agent.isStopped = true;
+
+        // Position the NPC directly on the chair and align rotation
+        transform.position = targetChair.transform.position; // <-- NPC sits directly on the chair's position
+        transform.rotation = targetChair.transform.rotation; // <-- NPC aligns with the chair's rotation
+
+        Debug.Log("NPC is seated on the chair: " + targetChair.name);
     }
 }

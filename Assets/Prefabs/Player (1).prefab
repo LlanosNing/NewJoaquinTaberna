@@ -153,7 +153,6 @@ GameObject:
   - component: {fileID: 2392354384548398104}
   - component: {fileID: 3266686154835478601}
   - component: {fileID: 3163598936672329198}
-  - component: {fileID: 740934197760633492}
   - component: {fileID: 21134411381849525}
   m_Layer: 6
   m_Name: Player (1)
@@ -317,16 +316,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd69030eba87d1c45923a73170fc58d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkSpeed: 2
-  runSpeed: 5
-  rotationSpeed: 10
+  moveSpeed: 7
+  sprintSpeed: 5
+  rotationSpeed: 700
   jumpForce: 7
-  gravity: -9.8
-  cameraTransform: {fileID: 1729607017188099873}
-  cameraDistance: 5
-  cameraHeight: 2
-  cameraRotationSpeed: 5
-  cameraCollisionOffset: 0.3
+  cameraPivot: {fileID: 1729607017188099873}
+  groundCheckCenter: {fileID: 1878903505897720219}
+  groundCheckSize: {x: 1, y: 1, z: 1}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!114 &3163598936672329198
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -352,19 +351,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   rb: {fileID: 0}
---- !u!114 &740934197760633492
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2533557754658828803}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e3f2d16e68a9cb4ab83f9101a14ea37, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 5
 --- !u!114 &21134411381849525
 MonoBehaviour:
   m_ObjectHideFlags: 0
