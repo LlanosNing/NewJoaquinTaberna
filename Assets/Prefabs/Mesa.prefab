@@ -79,7 +79,7 @@ GameObject:
   - component: {fileID: 2418291049709285353}
   m_Layer: 9
   m_Name: DropPoint
-  m_TagString: Pickupable
+  m_TagString: DropPoint
   m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -114,7 +114,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 3760692347463055119}
   m_Layer: 9
   m_Name: Mesa
-  m_TagString: DropPoint
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

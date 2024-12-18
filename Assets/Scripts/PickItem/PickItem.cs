@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PickItem : MonoBehaviour
 {
+    public bool isFoodPlaced;
+
     public Transform holdPosition; // Posición donde se sostendrán los objetos
     public float interactionRange = 5f; // Ampliamos el rango de interacción
     public LayerMask interactableLayer; // Capa para los objetos interactuables
@@ -73,13 +75,19 @@ public class PickItem : MonoBehaviour
         heldObject.transform.rotation = holdPosition.rotation;
         heldObject.transform.parent = holdPosition;
 
-        // Crear la previsualización
-        if (previewObjectPrefab != null)
+        // Crear la previsualización si no existe ya
+        if (previewObjectPrefab != null && previewObject == null)
         {
             previewObject = Instantiate(previewObjectPrefab);
+        }
+
+        // Asegurarse de que la previsualización esté inicialmente desactivada
+        if (previewObject != null)
+        {
             previewObject.SetActive(false);
         }
     }
+
 
     void TryDropObject()
     {
@@ -151,7 +159,12 @@ public class PickItem : MonoBehaviour
     {
         if (heldObject != null && previewObject != null)
         {
-            Collider[] hitColliders = Physics.OverlapSphere(transform.position, interactionRange, dropPointLayer);
+            // Usar la posición del raycastOrigin como referencia para buscar puntos de entrega
+            Vector3 originPosition = raycastOrigin != null ? raycastOrigin.position : transform.position;
+
+            // Buscar puntos de entrega cercanos en el rango especificado
+            Collider[] hitColliders = Physics.OverlapSphere(originPosition, interactionRange, dropPointLayer);
+
             if (hitColliders.Length > 0)
             {
                 // Encontrar el punto de entrega más cercano
@@ -160,39 +173,55 @@ public class PickItem : MonoBehaviour
 
                 foreach (Collider dropPoint in hitColliders)
                 {
-                    float distance = Vector3.Distance(transform.position, dropPoint.transform.position);
-                    if (distance < nearestDistance)
+                    // Verificar que el collider sea un DropPoint y no un hijo de este
+                    // Verifica si el objeto tiene el tag "DropPoint" (o cualquier otra forma de identificación)
+                    if (dropPoint.CompareTag("DropPoint"))
                     {
-                        nearestDistance = distance;
-                        nearestDropPoint = dropPoint;
+                        float distance = Vector3.Distance(originPosition, dropPoint.transform.position);
+                        if (distance < nearestDistance)
+                        {
+                            nearestDistance = distance;
+                            nearestDropPoint = dropPoint;
+                        }
                     }
                 }
 
+                // Si encontramos un DropPoint válido
                 if (nearestDropPoint != null)
                 {
                     currentDropPoint = nearestDropPoint.transform;
 
-                    // Obtener el centro del Collider del punto de entrega
+                    // Calcular la posición de la previsualización
                     Collider dropPointCollider = currentDropPoint.GetComponent<Collider>();
                     Vector3 previewPosition = dropPointCollider != null ? dropPointCollider.bounds.center : currentDropPoint.position;
 
-                    // Colocar la previsualización exactamente en el punto de entrega
+                    // Actualizar la posición y rotación de la previsualización
                     previewObject.SetActive(true);
                     previewObject.transform.position = previewPosition;
                     previewObject.transform.rotation = currentDropPoint.rotation;
 
-                    // Ajustar escala si es necesario para que coincida con el dropPoint
+                    // Ajustar escala para coincidir con el `dropPoint`
                     previewObject.transform.localScale = currentDropPoint.localScale;
                 }
             }
             else
             {
-                // Desactivar la previsualización si no hay puntos cercanos
+                // Desactivar la previsualización si no hay puntos de entrega cercanos
                 currentDropPoint = null;
                 previewObject.SetActive(false);
             }
         }
+        else
+        {
+            // Si no hay objeto sostenido, desactivar la previsualización
+            currentDropPoint = null;
+            if (previewObject != null)
+            {
+                previewObject.SetActive(false);
+            }
+        }
     }
+
 
     private void OnDrawGizmosSelected()
     {

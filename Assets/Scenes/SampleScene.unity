@@ -564,6 +564,12 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 1
+--- !u!4 &473830312 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2209809327009230294, guid: 3a1cc1df9e020e64696682e497257c0f,
+    type: 3}
+  m_PrefabInstance: {fileID: 4301010371782667938}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &596968882
 GameObject:
   m_ObjectHideFlags: 0
@@ -1678,6 +1684,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 21134411381849525, guid: 3a1cc1df9e020e64696682e497257c0f,
+        type: 3}
+      propertyPath: raycastOrigin
+      value: 
+      objectReference: {fileID: 473830312}
     - target: {fileID: 2533557754658828803, guid: 3a1cc1df9e020e64696682e497257c0f,
         type: 3}
       propertyPath: m_Name
