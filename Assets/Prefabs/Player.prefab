@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 3163598936672329198}
   - component: {fileID: 21134411381849525}
   m_Layer: 6
-  m_Name: Player (1)
+  m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -363,6 +363,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2eb53857ecea4145a0123a1fc3c80a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isFoodPlaced: 0
   holdPosition: {fileID: 273688790178732493}
   interactionRange: 2
   interactableLayer:
@@ -373,7 +374,7 @@ MonoBehaviour:
     m_Bits: 512
   previewObjectPrefab: {fileID: 723399879489342272, guid: 60ce82b374ab901428cf6a0e97c5ebc7,
     type: 3}
-  raycastOrigin: {fileID: 273688790178732493}
+  raycastOrigin: {fileID: 2209809327009230294}
 --- !u!1 &3969159108457382247
 GameObject:
   m_ObjectHideFlags: 0
