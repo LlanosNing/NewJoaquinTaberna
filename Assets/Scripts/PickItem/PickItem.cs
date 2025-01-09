@@ -88,7 +88,6 @@ public class PickItem : MonoBehaviour
         }
     }
 
-
     void TryDropObject()
     {
         if (currentDropPoint != null)
@@ -122,11 +121,8 @@ public class PickItem : MonoBehaviour
                 heldObjectRb.isKinematic = false;
             }
 
-            // Obtener el centro del Collider del punto de entrega
-            Collider dropPointCollider = dropPoint.GetComponent<Collider>();
-            Vector3 dropPosition = dropPointCollider != null ? dropPointCollider.bounds.center : dropPoint.position;
-
-            // Posicionar el objeto en el punto de entrega
+            // Posicionar el objeto en el centro del objeto vacío que marca el DropPoint
+            Vector3 dropPosition = dropPoint.position;
             heldObject.transform.position = dropPosition;
             heldObject.transform.parent = dropPoint; // Hacer que el objeto sea hijo del dropPoint
 
@@ -191,9 +187,8 @@ public class PickItem : MonoBehaviour
                 {
                     currentDropPoint = nearestDropPoint.transform;
 
-                    // Calcular la posición de la previsualización
-                    Collider dropPointCollider = currentDropPoint.GetComponent<Collider>();
-                    Vector3 previewPosition = dropPointCollider != null ? dropPointCollider.bounds.center : currentDropPoint.position;
+                    // Calcular la posición de la previsualización usando el centro del objeto vacío
+                    Vector3 previewPosition = currentDropPoint.position;
 
                     // Actualizar la posición y rotación de la previsualización
                     previewObject.SetActive(true);
@@ -222,7 +217,6 @@ public class PickItem : MonoBehaviour
         }
     }
 
-
     private void OnDrawGizmosSelected()
     {
         // Visualizar el rango de interacción en el editor
@@ -243,5 +237,6 @@ public class DropPoint : MonoBehaviour
 {
     public bool isOccupied = false;
 }
+
 
 
