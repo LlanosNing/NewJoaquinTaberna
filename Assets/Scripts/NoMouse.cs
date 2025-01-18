@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class NoMouse : MonoBehaviour
 {
-    //public Button miboton;
+    public Button miboton;
 
     // Start is called before the first frame update
     void Start()
@@ -20,10 +20,10 @@ public class NoMouse : MonoBehaviour
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //    miboton.Select();
-        //}
+        if (Input.GetMouseButtonDown(0))
+        {
+            miboton.Select();
+        }
 
 
 
