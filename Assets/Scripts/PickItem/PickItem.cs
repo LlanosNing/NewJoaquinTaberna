@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PickItem : MonoBehaviour
 {
-    public bool isFoodPlaced;
+    #region Variables
 
     public Transform holdPosition; // Posición donde se sostendrán los objetos
     public float interactionRange = 5f; // Ampliamos el rango de interacción
@@ -17,6 +17,8 @@ public class PickItem : MonoBehaviour
     private GameObject previewObject; // Instancia del objeto de previsualización
     private Transform currentDropPoint; // Punto de entrega más cercano
     private Rigidbody heldObjectRb; // Rigidbody del objeto sostenido
+
+    #endregion
 
     void Update()
     {
@@ -39,12 +41,6 @@ public class PickItem : MonoBehaviour
 
     void TryPickupObject()
     {
-        if (raycastOrigin == null)
-        {
-            Debug.LogError("raycastOrigin no está configurado.");
-            return;
-        }
-
         // Detectar objetos cercanos usando un rayo esférico
         Collider[] hitColliders = Physics.OverlapSphere(raycastOrigin.position, interactionRange, interactableLayer);
         if (hitColliders.Length > 0)
@@ -52,19 +48,19 @@ public class PickItem : MonoBehaviour
             // Seleccionar el primer objeto válido
             GameObject objectToPickup = hitColliders[0].gameObject;
 
-            if (objectToPickup != null)
+            if (objectToPickup != null) //comprueba que no es nulo el objeto
             {
-                PickupObject(objectToPickup);
+                PickupObject(objectToPickup); //llamada el metodo para recoger el objeto
             }
         }
     }
 
     void PickupObject(GameObject obj)
     {
-        heldObject = obj;
+        heldObject = obj; //referencia al objeto recogido
 
         // Desactivar física del objeto mientras se sostiene
-        heldObjectRb = heldObject.GetComponent<Rigidbody>();
+        heldObjectRb = heldObject.GetComponent<Rigidbody>(); //obtener el rigidbody del objeto y desactivar la fisica (lo sostiene)
         if (heldObjectRb != null)
         {
             heldObjectRb.isKinematic = true;
@@ -105,7 +101,7 @@ public class PickItem : MonoBehaviour
         if (heldObject != null)
         {
             DropPoint dropPointScript = dropPoint.GetComponent<DropPoint>();
-            if (dropPointScript != null && dropPointScript.isOccupied)
+            if (dropPointScript != null && dropPointScript.isOccupied == true)
             {
                 Debug.Log("Ya hay un objeto colocado en este punto.");
                 if (previewObject != null)
@@ -236,6 +232,7 @@ public class PickItem : MonoBehaviour
 public class DropPoint : MonoBehaviour
 {
     public bool isOccupied = false;
+    public bool canBePlaced = true;
 }
 
 
