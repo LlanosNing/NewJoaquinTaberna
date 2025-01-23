@@ -26,6 +26,7 @@ public class PickItem : MonoBehaviour
 
     #endregion
 
+    #region Metodos Unity
     void Update()
     {
         // Detectar interacción con objetos al presionar las teclas E o Q
@@ -41,6 +42,11 @@ public class PickItem : MonoBehaviour
         // Actualizar la previsualización
         UpdatePreview();
     }
+
+    #endregion
+
+    #region Metodos PickObject+
+
 
     void HandlePickupOrDrop(ref GameObject heldObject, Transform holdPosition, GameObject uiPanel)
     {
@@ -236,13 +242,16 @@ public class PickItem : MonoBehaviour
     }
 }
 
+#endregion
 
+#region DropPoint
 public class DropPoint : MonoBehaviour
 {
     public bool isOccupied = false;
     public bool canBePlaced = true;
 }
 
+#endregion
 
 
 
