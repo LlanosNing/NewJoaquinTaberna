@@ -7,36 +7,50 @@ public class ObjectPanel : MonoBehaviour
 {
     #region Variables
 
-    public GameObject uiPanelE; // Panel de la UI para cuando se recoge un objeto con la tecla E
-    public GameObject uiPanelQ; // Panel de la UI para cuando se recoge un objeto con la tecla Q
+    public GameObject uiPanelE;
+    public GameObject uiPanelQ;
+
+    private PickItem _pI;
+
+    private void Start()
+    {
+        _pI = GameObject.Find("Player").GetComponent<PickItem>();
+        Debug.Log("Referencia pillada");
+    }
 
     #endregion
 
-    public void ShowUIPanel(Transform holdPosition)
+    private void Update()
     {
-        if (holdPosition == null) return;
+        ShowUIPanel();
+        HideUIPanel();
+    }
 
-        if (holdPosition.CompareTag("HoldPointE"))
+    public void ShowUIPanel()
+    {
+        //if (holdPosition == null) return;
+
+        if (_pI.isObjHeld == true)
         {
             uiPanelE.SetActive(true); // Mostrar el panel cuando se recoge un objeto en el holdPointE
         }
-        else if (holdPosition.CompareTag("HoldPointQ"))
-        {
-            uiPanelQ.SetActive(true); // Mostrar el panel cuando se recoge un objeto en el holdPointQ
-        }
+        //else if (holdPosition.CompareTag("HoldPointQ"))
+        //{
+        //    uiPanelQ.SetActive(true); // Mostrar el panel cuando se recoge un objeto en el holdPointQ
+        //}
     }
 
-    public void HideUIPanel(Transform holdPosition)
+    public void HideUIPanel()
     {
-        if (holdPosition == null) return;
+        //if (holdPosition == null) return;
 
-        if (holdPosition.CompareTag("HoldPointE"))
+        if (_pI.isObjHeld == false)
         {
             uiPanelE.SetActive(false); // Ocultar el panel cuando se suelta un objeto en el holdPointE
         }
-        else if (holdPosition.CompareTag("HoldPointQ"))
-        {
-            uiPanelQ.SetActive(false); // Ocultar el panel cuando se suelta un objeto en el holdPointQ
-        }
+        //else if (holdPosition.CompareTag("HoldPointQ"))
+        //{
+        //    uiPanelQ.SetActive(false); // Ocultar el panel cuando se suelta un objeto en el holdPointQ
+        //}
     }
 }

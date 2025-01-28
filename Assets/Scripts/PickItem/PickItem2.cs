@@ -2,67 +2,84 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PickItem : MonoBehaviour
+public class PickItem2 : MonoBehaviour
 {
-    public bool isObjHeld;
+    #region Variables
 
-    public Transform holdPosition; // Posición donde se sostendrán los objetos
-    public float interactionRange = 5f; // Ampliamos el rango de interacción
+    public Transform holdPositionE; // Posición donde se sostendrán los objetos al presionar E
+    public Transform holdPositionQ; // Posición donde se sostendrán los objetos al presionar Q
+    public float interactionRange = 5f; // Rango de interacción
     public LayerMask interactableLayer; // Capa para los objetos interactuables
     public LayerMask dropPointLayer; // Capa para los puntos de entrega
     public GameObject previewObjectPrefab; // Prefab de previsualización del objeto
     public Transform raycastOrigin; // Punto de origen del raycast (por ejemplo, la mano del personaje)
 
-    private GameObject heldObject; // Objeto actualmente sostenido por el jugador
+    private GameObject heldObjectE; // Objeto sostenido en holdPositionE
+    private GameObject heldObjectQ; // Objeto sostenido en holdPositionQ
     private GameObject previewObject; // Instancia del objeto de previsualización
     private Transform currentDropPoint; // Punto de entrega más cercano
-    private Rigidbody heldObjectRb; // Rigidbody del objeto sostenido
+    private Rigidbody heldObjectRb; // Rigidbody temporal para manejar los objetos
 
+    // Referencias a los paneles de la UI
+    public GameObject uiPanelE; // Panel de la UI para cuando se recoge un objeto con la tecla E
+    public GameObject uiPanelQ; // Panel de la UI para cuando se recoge un objeto con la tecla Q
+
+    #endregion
+
+    #region Metodos Unity
     void Update()
     {
-        // Detectar interacción con objetos al presionar el botón
+        // Detectar interacción con objetos al presionar las teclas E o Q
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if (heldObject == null)
-            {
-                TryPickupObject();
-            }
-            else
-            {
-                TryDropObject();
-            }
+            HandlePickupOrDrop(ref heldObjectE, holdPositionE, uiPanelE);
+        }
+        else if (Input.GetKeyDown(KeyCode.Q))
+        {
+            HandlePickupOrDrop(ref heldObjectQ, holdPositionQ, uiPanelQ);
         }
 
         // Actualizar la previsualización
         UpdatePreview();
     }
 
-    void TryPickupObject()
-    {
-        if (raycastOrigin == null)
-        {
-            Debug.LogError("raycastOrigin no está configurado.");
-            return;
-        }
+    #endregion
 
+    #region Metodos PickObject+
+
+
+    void HandlePickupOrDrop(ref GameObject heldObject, Transform holdPosition, GameObject uiPanel)
+    {
+        if (heldObject == null)
+        {
+            TryPickupObject(ref heldObject, holdPosition, uiPanel);
+        }
+        else
+        {
+            TryDropObject(ref heldObject, uiPanel);
+        }
+    }
+
+    void TryPickupObject(ref GameObject heldObject, Transform holdPosition, GameObject uiPanel)
+    {
         // Detectar objetos cercanos usando un rayo esférico
         Collider[] hitColliders = Physics.OverlapSphere(raycastOrigin.position, interactionRange, interactableLayer);
-        if (hitColliders.Length > 0)
+        foreach (Collider hitCollider in hitColliders)
         {
-            // Seleccionar el primer objeto válido
-            GameObject objectToPickup = hitColliders[0].gameObject;
+            GameObject objectToPickup = hitCollider.gameObject;
 
-            if (objectToPickup != null)
+            // Verificar que no es el mismo objeto que ya se sostiene en otra posición
+            if (objectToPickup != heldObjectE && objectToPickup != heldObjectQ)
             {
-                PickupObject(objectToPickup);
+                PickupObject(ref heldObject, objectToPickup, holdPosition, uiPanel);
+                return; // Salir del bucle después de recoger un objeto
             }
         }
     }
 
-    void PickupObject(GameObject obj)
+    void PickupObject(ref GameObject heldObject, GameObject obj, Transform holdPosition, GameObject uiPanel)
     {
-        heldObject = obj;
-        isObjHeld = true;
+        heldObject = obj; // Asignar el objeto recogido
 
         // Desactivar física del objeto mientras se sostiene
         heldObjectRb = heldObject.GetComponent<Rigidbody>();
@@ -71,7 +88,7 @@ public class PickItem : MonoBehaviour
             heldObjectRb.isKinematic = true;
         }
 
-        // Posicionar el objeto en la posición de "hold"
+        // Posicionar el objeto en la posición de sostén
         heldObject.transform.position = holdPosition.position;
         heldObject.transform.rotation = holdPosition.rotation;
         heldObject.transform.parent = holdPosition;
@@ -82,18 +99,21 @@ public class PickItem : MonoBehaviour
             previewObject = Instantiate(previewObjectPrefab);
         }
 
-        // Asegurarse de que la previsualización esté inicialmente desactivada
+        // Activar la previsualización
         if (previewObject != null)
         {
-            previewObject.SetActive(false);
+            previewObject.SetActive(true);
         }
+
+        // Mostrar el panel correspondiente de la UI
+        uiPanel.SetActive(true);
     }
 
-    void TryDropObject()
+    void TryDropObject(ref GameObject heldObject, GameObject uiPanel)
     {
         if (currentDropPoint != null)
         {
-            DropObject(currentDropPoint);
+            DropObject(ref heldObject, uiPanel, currentDropPoint);
         }
         else
         {
@@ -101,10 +121,8 @@ public class PickItem : MonoBehaviour
         }
     }
 
-    void DropObject(Transform dropPoint)
+    void DropObject(ref GameObject heldObject, GameObject uiPanel, Transform dropPoint)
     {
-        isObjHeld = false;
-
         if (heldObject != null)
         {
             DropPoint2 dropPointScript = dropPoint.GetComponent<DropPoint2>();
@@ -119,21 +137,21 @@ public class PickItem : MonoBehaviour
             }
 
             // Reactivar la física del objeto al soltarlo
+            Rigidbody heldObjectRb = heldObject.GetComponent<Rigidbody>();
             if (heldObjectRb != null)
             {
                 heldObjectRb.isKinematic = false;
             }
 
-            // Posicionar el objeto en el centro del objeto vacío que marca el DropPoint2
+            // Posicionar el objeto en el centro del punto de entrega
             Vector3 dropPosition = dropPoint.position;
             heldObject.transform.position = dropPosition;
-            heldObject.transform.parent = dropPoint; // Hacer que el objeto sea hijo del dropPoint
+            heldObject.transform.parent = dropPoint;
 
             // Congelar la posición y rotación del objeto para evitar que se mueva
-            Rigidbody dropRb = heldObject.GetComponent<Rigidbody>();
-            if (dropRb != null)
+            if (heldObjectRb != null)
             {
-                dropRb.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
+                heldObjectRb.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
             }
 
             // Marcar el punto como ocupado
@@ -145,35 +163,33 @@ public class PickItem : MonoBehaviour
             // Soltar el objeto
             heldObject = null;
 
-            // Destruir la previsualización
-            if (previewObject != null)
+            // Destruir la previsualización si no hay objetos sostenidos
+            if (heldObjectE == null && heldObjectQ == null && previewObject != null)
             {
                 Destroy(previewObject);
                 previewObject = null;
             }
+
+            // Ocultar el panel correspondiente de la UI
+            uiPanel.SetActive(false);
         }
     }
 
     void UpdatePreview()
     {
-        if (heldObject != null && previewObject != null)
+        if ((heldObjectE != null || heldObjectQ != null) && previewObject != null)
         {
-            // Usar la posición del raycastOrigin como referencia para buscar puntos de entrega
             Vector3 originPosition = raycastOrigin != null ? raycastOrigin.position : transform.position;
 
-            // Buscar puntos de entrega cercanos en el rango especificado
             Collider[] hitColliders = Physics.OverlapSphere(originPosition, interactionRange, dropPointLayer);
 
             if (hitColliders.Length > 0)
             {
-                // Encontrar el punto de entrega más cercano
                 Collider nearestDropPoint = null;
                 float nearestDistance = float.MaxValue;
 
                 foreach (Collider dropPoint in hitColliders)
                 {
-                    // Verificar que el collider sea un DropPoint2 y no un hijo de este
-                    // Verifica si el objeto tiene el tag "DropPoint2" (o cualquier otra forma de identificación)
                     if (dropPoint.CompareTag("DropPoint"))
                     {
                         float distance = Vector3.Distance(originPosition, dropPoint.transform.position);
@@ -185,33 +201,25 @@ public class PickItem : MonoBehaviour
                     }
                 }
 
-                // Si encontramos un DropPoint2 válido
                 if (nearestDropPoint != null)
                 {
                     currentDropPoint = nearestDropPoint.transform;
 
-                    // Calcular la posición de la previsualización usando el centro del objeto vacío
                     Vector3 previewPosition = currentDropPoint.position;
-
-                    // Actualizar la posición y rotación de la previsualización
                     previewObject.SetActive(true);
                     previewObject.transform.position = previewPosition;
                     previewObject.transform.rotation = currentDropPoint.rotation;
-
-                    // Ajustar escala para coincidir con el `dropPoint`
                     previewObject.transform.localScale = currentDropPoint.localScale;
                 }
             }
             else
             {
-                // Desactivar la previsualización si no hay puntos de entrega cercanos
                 currentDropPoint = null;
                 previewObject.SetActive(false);
             }
         }
         else
         {
-            // Si no hay objeto sostenido, desactivar la previsualización
             currentDropPoint = null;
             if (previewObject != null)
             {
@@ -222,11 +230,9 @@ public class PickItem : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // Visualizar el rango de interacción en el editor
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, interactionRange);
 
-        // Visualizar todos los puntos de entrega en el editor
         Gizmos.color = Color.green;
         Collider[] dropPoints = Physics.OverlapSphere(transform.position, interactionRange, dropPointLayer);
         foreach (Collider dropPoint in dropPoints)
@@ -236,10 +242,17 @@ public class PickItem : MonoBehaviour
     }
 }
 
-public class DropPoint : MonoBehaviour
+#endregion
+
+#region DropPoint
+public class DropPoint2 : MonoBehaviour
 {
     public bool isOccupied = false;
+    public bool canBePlaced = true;
 }
+
+#endregion
+
 
 
 
