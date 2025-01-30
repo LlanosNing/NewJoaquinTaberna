@@ -2602,7 +2602,7 @@ MonoBehaviour:
     m_Bits: 512
   previewObjectPrefab: {fileID: 723399879489342272, guid: 60ce82b374ab901428cf6a0e97c5ebc7,
     type: 3}
-  raycastOrigin: {fileID: 681521814}
+  raycastOrigin: {fileID: 1176971250}
 --- !u!1 &477536793
 GameObject:
   m_ObjectHideFlags: 0
@@ -3391,12 +3391,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1465036922608038918, guid: b16a1ead90e667b488df547ea8b4a84a,
     type: 3}
   m_PrefabInstance: {fileID: 933980073}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &681521814 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6837460740102468145, guid: 3a1cc1df9e020e64696682e497257c0f,
-    type: 3}
-  m_PrefabInstance: {fileID: 4301010371782667938}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &688582734
 GameObject:
@@ -14514,6 +14508,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 6140130862652293533, guid: 3a1cc1df9e020e64696682e497257c0f, type: 3}
+    - {fileID: 8859795041904405345, guid: 3a1cc1df9e020e64696682e497257c0f, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2533557754658828803, guid: 3a1cc1df9e020e64696682e497257c0f,
