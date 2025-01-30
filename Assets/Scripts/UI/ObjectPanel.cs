@@ -15,7 +15,6 @@ public class ObjectPanel : MonoBehaviour
     private void Start()
     {
         _pI = GameObject.Find("Player").GetComponent<PickItem>();
-        Debug.Log("Referencia pillada");
     }
 
     #endregion
