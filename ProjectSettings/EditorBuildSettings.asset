@@ -15,6 +15,6 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: f07b1311f19cc3d45a9d37dfa5af82f9
   - enabled: 1
-    path: Assets/Scenes/testeo.unity
+    path: Assets/Scenes/InteriorTaberna.unity
     guid: a3700f03670ad0a48a354e6bbbcfd825
   m_configObjects: {}

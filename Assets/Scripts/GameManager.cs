@@ -135,4 +135,10 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0f);
         SceneManager.LoadScene(levelToLoad);
     }
+
+    public void Quit()
+    {
+        Application.Quit();
+        Debug.Log("Saliendo de la aplicacion");
+    }
 }
