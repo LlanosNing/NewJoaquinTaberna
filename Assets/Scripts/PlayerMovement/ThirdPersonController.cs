@@ -26,6 +26,9 @@ public class ThirdPersonController : MonoBehaviour
     public Rigidbody rb;
     private Camera cam;
 
+    //cosas pa la animacion
+    public Animator miAnim;
+
     void Start()
     {
         //buscar y asignar el rigidbody automaticamente
@@ -37,6 +40,11 @@ public class ThirdPersonController : MonoBehaviour
     {
         float _horizontal = Input.GetAxisRaw("Horizontal");
         float _vertical = Input.GetAxisRaw("Vertical");
+
+        //cosas para la animacion xd
+        float HVMagnitud = new Vector2(_horizontal, _vertical).magnitude;
+        miAnim.SetFloat("HV_Magnitud", HVMagnitud);
+
         //guardamos el input para usarlo en fixedupdate
         input = new Vector3(_horizontal, 0f, _vertical);
         //para que se mueva en la direccion correcta respecto hacia donde mira,
